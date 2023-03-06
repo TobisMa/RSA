@@ -21,9 +21,18 @@ in most cases there are more possible inputs than they should.
 
 
 # Usage
+## cmd / Powershell, shell
 Run the command `python -i main.py` in the folder of the file
 This will open an interactive python terminal where the commands below are usable
 
+## file
+### Linux
+run `rsa-tools` in terminal
+
+### Windows
+_not yet_
+
+# Functions
 ## creating a key pair
 `main()`
 Asks for p, q  
