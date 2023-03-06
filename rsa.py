@@ -2,10 +2,9 @@ from ast import Mod
 import math
 from random import randint
 import sys
-from typing import List, Tuple, Union
+from typing import Generic, List, Tuple, TypeVar, Union
 
 HUNDRED_THOUSAND = 100_000
-
 
 def generate_primes(until: int) -> List[int]:
     """Generates primes until the given number (excluding the given number)
@@ -69,14 +68,14 @@ def extgcd(a: int, b: int, *, as_equations: bool = False) -> List[int]:
 
 
 def extgcd_eq(a: int, b: int) -> List[int]:
-    """_summary_
+    """Same as `extgcd`, but it prints the equations 
 
     Args:
-        a (int): _description_
-        b (int): _description_
+        a (int): the first argument
+        b (int): the second argument
 
     Returns:
-        List: _description_
+        List[int]: in format [x, y] 
     """
     r = b
     steps = []
@@ -168,22 +167,48 @@ def private_key(pN: int, N: int, e: int, mod_d: bool = True) -> Tuple[int, int]:
     return (d, N)
 
 
-def encrypt(message: int, *public_keyset) -> int:
+def encrypt(message: Union[str, int], *public_keyset) -> Union[List[int], int]:
+    """Exncrypts data which is either string or number
+
+    Args:
+        message (int | str): Either a number or a string
+
+    Raises:
+        ValueError: if the passed input is invalid
+
+    Returns:
+        List[int] | int: the encrypted data. As list of integers if the input was a string. 
+        if the input was an integer the encrypted integer will be returned
+    """
     if len(public_keyset) == 1 and isinstance(public_keyset[0], (list, tuple)):
         public_keyset = public_keyset[0]
     elif len(public_keyset) != 2:
-        raise ValueError("Invalid arguments")
+        raise ValueError("Please provide a key")
+    if isinstance(message, str):
+        return [encrypt(ord(x), *public_keyset) for x in message]  # type: ignore
 
     return (message ** public_keyset[0]) % public_keyset[1]
 
 
-def decrypt(message_to_encrypt: int, *private_keyset) -> int:
+def decrypt(message_to_decrypt: Union[List[int], int], *private_keyset) -> Union[str, int]:
+    """Decrpyts data which has been encrypted
+
+    Args:
+        message_to_decrypt (List[int] | int): the encrypted message. Either a list of integers or the only an integer
+
+    Raises:
+        ValueError: if the passed arguments are invalid
+
+    Returns:
+        str | int: the decrypted string or decrypted number
+    """
     if len(private_keyset) == 1 and isinstance(private_keyset[0], (list, tuple)):
         private_keyset = private_keyset[0]
     elif len(private_keyset) != 2:
-        raise ValueError("Invalid arguments")
-
-    return (message_to_encrypt ** private_keyset[0]) % private_keyset[1]
+        raise ValueError("Please provide a key")
+    if isinstance(message_to_decrypt, int):
+        return (message_to_decrypt ** private_keyset[0]) % private_keyset[1]
+    return ''.join(map(chr, (decrypt(x, *private_keyset) for x in message_to_decrypt)))
 
 
 def main() -> Union[Tuple[Tuple[int, int], Tuple[int, int]], str]:
