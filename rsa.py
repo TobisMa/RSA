@@ -127,8 +127,12 @@ def public_key(pN: int, N: int) -> Tuple[int, int]:
     Returns:
         Tuple[int, int]: the public key in format `(e, N)`
     """
-    possible_primes = list(filter(lambda x: math.gcd(N, x) == 1, generate_primes(pN)))
-    print("Primes within range:", possible_primes)
+    if N < 2 * HUNDRED_THOUSAND:
+        possible_primes = list(filter(lambda x: math.gcd(N, x) == 1, generate_primes(pN)))
+        print("Primes within range:", possible_primes)
+    else:
+        print("WARNING: Primes won't be calculated. To large range to cover")
+        
     flag = True
     while flag or math.gcd(e, N) != 1:
         if not flag:
