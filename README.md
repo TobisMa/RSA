@@ -2,7 +2,6 @@
 contains Tools for RSA usage
 
 ## NOTE
-> A lot of the things below will be fixed in the next days
 
 `main()`:
 - primes after 100000 are not checked, but assumed to be primes due to time efficiency
@@ -15,6 +14,9 @@ contains Tools for RSA usage
 
 `generate_primes`:
 - it will exclude the `until` even though it is being calculated
+
+`encrypt`, `decrypt`
+- if the message is not within the allowed range, there will be no warning whatsoever
 
 # Install
 ## by git
