@@ -76,7 +76,7 @@ N: p*q
 e: the left part of the public key  
 Returns: the private key `(d, N)`
 
-## "Erweiterter eulkidischer Algorithmus"
+## "Extended Euclidean Algorithm"
 `extgcd(a: int, b: int) -> List[int]`  
 Prints the table calculation  
 Returns `[x, y]`  
