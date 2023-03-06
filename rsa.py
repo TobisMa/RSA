@@ -117,14 +117,14 @@ def private_key(pN: int, N: int, e: int) -> Tuple[int, int]:
     return (xy[0] % pN, N)
 
 def encrypt(m: int, *public_keyset) -> int:
-    if len(public_keyset) == 1 and (isinstance(public_keyset[0], list), isinstance(public_keyset[0], tuple)):
+    if len(public_keyset) == 1 and (isinstance(public_keyset[0], list) or isinstance(public_keyset[0], tuple)):
         public_keyset = public_keyset[0]
     elif len(public_keyset) != 2:
         raise ValueError("Invalid arguments")
 
     return (m ** public_keyset[0]) % public_keyset[1]
 def decrypt(m: int, *private_keyset) -> int:
-    if len(private_keyset) == 1 and (isinstance(private_keyset[0], list), isinstance(private_keyset[0], tuple)):
+    if len(private_keyset) == 1 and (isinstance(private_keyset[0], list) or isinstance(private_keyset[0], tuple)):
         private_keyset = private_keyset[0]
     elif len(private_keyset) != 2:
         raise ValueError("Invalid arguments")
