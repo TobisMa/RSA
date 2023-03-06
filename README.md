@@ -4,10 +4,8 @@ contains Tools for RSA usage
 ## NOTE
 > A lot of the things below will be fixed in the next days
 
-`gcd(a, b)=ggT(a, b)`
-
 `main()`:
-- primes after 1000000 are not checked, but assumed to be primes due to time efficiency
+- primes after 100000 are not checked, but assumed to be primes due to time efficiency
 
 `public_key`:
 - it is assumed `pN` and `N` are correct
@@ -46,7 +44,7 @@ _not yet_
 
 # Functions
 ## creating a key pair
-`main()`
+`main() -> Tuple[Tuple[int, int], Tuple[int, int]]`
 Asks for p, q  
 Asks for an e  
 Prints the `extgcd($\varphi(N)$, e)` table  
@@ -63,24 +61,55 @@ print(private_key)
 the values will be directly be accessable through "unpacking"
 
 ## creating a public key
-`public_key(pN: int, N: int)`  
+`public_key(pN: int, N: int) -> Tuple[int, int]`  
 _is asking for `e`_  
 pN: $\varphi(N)$  
 N: p*q  
 Returns: the public key `(e, N)`
 
 ## creating a private key
-`private_key(pN: int, N: int, e: int)`  
+`private_key(pN: int, N: int, e: int) -> Tuple[int, int]`  
 pN: $\varphi(N)$  
 N: p*q  
 e: the left part of the public key  
 Returns: the private key `(d, N)`
 
 ## "Extended Euclidean Algorithm"
-`extgcd(a: int, b: int) -> List[int]`  
-Prints the table calculation  
-Returns `[x, y]`  
+`extgcd(a: int, b: int, as_equations=False) -> List[int]`  
+_Prints the table or equation calculation_  
+a, b: integers as input for the "Extended Euclidean Algorithm"  
+as_equations: Switch between table and equations output. Defaults to table  
+Returns: `[x, y]`  
+
+### Directly as equations
+`extgcd_eq(a, b) -> List[int]`  
+_Prints the steps as equations_
+a, b: integers as inputs for the algorithm
+Returns: [x, y]
 
 ## generate primes until
 `generate_primes(until: int) -> List[int]`  
-Returns a list of primes excluding `until`  
+Returns: a list of primes excluding `until` 
+
+## encrypt a message
+`encrypt(message: int, public_key: Tuple[int, int]) -> int`  
+message: an integer  
+key: a tuple in format `(e, N)`
+Returns: the encrypted message
+
+Example
+```python
+public_key = (47, 77)
+secret_message = encrypt(3, public_key)  # 75
+```
+
+## decrypt data
+`decrypt(message: int, private_key: Tuple[int, int]) -> int`
+message: the message to decrypt. For example from `encrypt`  
+private_key: the private key in format `(d, N)`
+
+Example
+```python
+private_key = (23, 77)
+secret_message = decrypt(75, private_key)  # 3
+```
