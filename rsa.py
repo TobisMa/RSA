@@ -8,7 +8,7 @@ def generate_primes(until):
 	t = -1
 	while primes[-1] < until:
 		if (checkN % 5 != 0 or checkN == 5):
-			for i, cprime in enumerate(primes):
+			for cprime in primes:
 				t = checkN % cprime
 				if (cprime > sqrtN or t == 0):
 					break
@@ -39,9 +39,14 @@ def extgcd(a, b):
 	return table[0][-2:]	
 
 def public_key(pN, N):
-	possible_primes = list(filter(lambda x: math.gcd(N,x), generate_primes(pN)))
+	possible_primes = list(filter(lambda x: math.gcd(N,x) == 1, generate_primes(pN)))
 	print("Moegliche primes:", possible_primes)
-	e = int(input("Choose: "))
+	flag = True
+	while flag or math.gcd(e, N) != 1:
+		if not flag:
+			print("Not a valid value for e: %s" % e)
+		e = int(input("Choose: "))
+		flag = False	
 	return (e % pN, N)
 
 def private_key(pN, N, e):
