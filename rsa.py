@@ -1,3 +1,4 @@
+from ast import Mod
 import math
 from random import randint
 import sys
@@ -7,15 +8,23 @@ HUNDRED_THOUSAND = 100_000
 
 
 def generate_primes(until: int) -> List[int]:
+    """Generates primes until the given number (excluding the given number)
+
+    Args:
+        until (int): the number to limit the primes generation
+
+    Returns:
+        List[int]: the collection of primes until the given limit (excluding the limit)
+    """
     primes = [2]
     checkN = 3
     sqrtN = 1
     t = -1
     while primes[-1] < until:
-        if (checkN % 5 != 0 or checkN == 5):
+        if checkN % 5 != 0 or checkN == 5:
             for cprime in primes:
                 t = checkN % cprime
-                if (cprime > sqrtN or t == 0):
+                if cprime > sqrtN or t == 0:
                     break
             if (sqrtN + 1) * (sqrtN + 1) < checkN:
                 sqrtN += 1
@@ -25,9 +34,19 @@ def generate_primes(until: int) -> List[int]:
     return primes[:-1]
 
 
-def extgcd(a: int, b: int, *, eq: bool = False) -> List[int]:
-    if eq:
-        out = str_extgcd(a, b)
+def extgcd(a: int, b: int, *, as_equations: bool = False) -> List[int]:
+    """Calculates extended euclidean algorithm of a and b and prints the steps to the solution
+
+    Args:
+        a (int): the first argument
+        b (int): the second argument
+        as_equations (bool, optional): When enabled passes the arguments to `extgcd_eq`. Defaults to False.
+
+    Returns:
+        List[int]: in format [x, y]
+    """
+    if as_equations:
+        out = extgcd_eq(a, b)
         print(out[0])
         return out[1]
 
@@ -43,14 +62,23 @@ def extgcd(a: int, b: int, *, eq: bool = False) -> List[int]:
     for i in range(2, len(table) + 1):
         table[-i].extend([table[-i + 1][5], table[-i + 1][4] - table[-i][2] * table[-i + 1][5]])
 
-    if not eq:
-        print("a\tb\tq\tr\tx\ty")
-        for line in table:
-            print('\t'.join(map(str, line)))
+    # won't happen because it returns if eq==True
+    print("a\tb\tq\tr\tx\ty")
+    for line in table:
+        print('\t'.join(map(str, line)))
     return table[0][-2:]
 
 
-def str_extgcd(a: int, b: int) -> List:
+def extgcd_eq(a: int, b: int) -> List:
+    """_summary_
+
+    Args:
+        a (int): _description_
+        b (int): _description_
+
+    Returns:
+        List: _description_
+    """
     r = b
     steps = []
     equations = []
@@ -92,6 +120,15 @@ def str_extgcd(a: int, b: int) -> List:
 
 
 def public_key(pN: int, N: int) -> Tuple[int, int]:
+    """Creates a public key using phi(N), N and a user decidable e
+
+    Args:
+        pN (int): phi(N)
+        N (int): the product of `p` and `q`
+
+    Returns:
+        Tuple[int, int]: the public key in format `(e, N)`
+    """
     possible_primes = list(filter(lambda x: math.gcd(N, x) == 1, generate_primes(pN)))
     print("Primes within range:", possible_primes)
     flag = True
@@ -109,27 +146,45 @@ def public_key(pN: int, N: int) -> Tuple[int, int]:
         elif e <= 1:
             print("Invalid values for e: zero and one", file=sys.stderr)
 
-    return (e % pN, N)
+    return (e, N)
 
 
-def private_key(pN: int, N: int, e: int) -> Tuple[int, int]:
+def private_key(pN: int, N: int, e: int, mod_d: bool = True) -> Tuple[int, int]:
+    """generating a private key using phi(N), N and e from the public key
+       If d will be a negative value it will be taken care of by this function per default
+       
+    Args:
+        pN (int): phi(N)
+        N (int): the product of p and q
+        e (int): the left part of the public key
+        mod_d (bool): when disabled the d-part of this key may return negative values. Defaults to True.
+
+    Returns:
+        Tuple[int, int]: the provate key in format `(d, N)`
+    """
     xy = extgcd(e, pN)
-    return (xy[0] % pN, N)
+    d = xy[0]
+    if mod_d:
+        d %= pN
+    return (d, N)
 
-def encrypt(m: int, *public_keyset) -> int:
-    if len(public_keyset) == 1 and (isinstance(public_keyset[0], list), isinstance(public_keyset[0], tuple)):
+
+def encrypt(message: int, *public_keyset) -> int:
+    if len(public_keyset) == 1 and isinstance(public_keyset[0], (list, tuple)):
         public_keyset = public_keyset[0]
     elif len(public_keyset) != 2:
         raise ValueError("Invalid arguments")
 
-    return (m ** public_keyset[0]) % public_keyset[1]
-def decrypt(m: int, *private_keyset) -> int:
-    if len(private_keyset) == 1 and (isinstance(private_keyset[0], list), isinstance(private_keyset[0], tuple)):
+    return (message ** public_keyset[0]) % public_keyset[1]
+
+
+def decrypt(message_to_encrypt: int, *private_keyset) -> int:
+    if len(private_keyset) == 1 and isinstance(private_keyset[0], (list, tuple)):
         private_keyset = private_keyset[0]
     elif len(private_keyset) != 2:
         raise ValueError("Invalid arguments")
 
-    return (m ** private_keyset[0]) % private_keyset[1]
+    return (message_to_encrypt ** private_keyset[0]) % private_keyset[1]
 
 
 def main() -> Union[Tuple[Tuple[int, int], Tuple[int, int]], str]:
