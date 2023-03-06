@@ -6,14 +6,10 @@ contains Tools for RSA usage
 
 `gcd(a, b)=ggT(a, b)`
 
-in most cases there are more possible inputs than they should.
 `main()`:
-- all numbers for `p` and `q`are accepted; **not only** primes
-- there is no check for negativ numbers
+- primes after 1000000 are not checked, but assumed to be primes due to time efficiency
 
 `public_key`
-- when asking for `e` every number is accepted even if $gcd(\varphi(N), N) \ne 1$
-- positive numbers are expected
 - it is assumed `pN` and `N` are correct
 
 `private_key`
