@@ -2,7 +2,6 @@
 contains Tools for RSA usage
 
 ## NOTE
-> A lot of the things below will be fixed in the next days
 
 `main()`:
 - primes after 100000 are not checked, but assumed to be primes due to time efficiency
