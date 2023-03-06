@@ -3,7 +3,7 @@ contains Tools for RSA usage
 
 ## NOTE
 in most cases there are more possible inputs than they should.
-- all numbers when using `main()` arem accepted; **not only** primes
+- all numbers when using `main()` are accepted; **not only** primes
 - ...and more
 
 # Install
@@ -43,7 +43,7 @@ Returns: the public key `(e, N)`
 pN: $\varphi(N)$  
 N: p*q  
 e: the left part of the public key  
-Retrusn: the private key `(d, N)`
+Returns: the private key `(d, N)`
 
 ## "Erweiterter eulkidischer Algorithmus"
 `extgcd(a: int, b: int) -> List[int]`  
