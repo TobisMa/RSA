@@ -26,23 +26,30 @@ This will open an interactive python terminal where the commands below are usabl
 
 ## creating a key pair
 `main()`
+Asks for p, q  
+Asks for an e  
+Prints the `extgcd($\varphi(N)$, e)` table  
+Prints the public & private key
 
 ## creating a public key
-`public_key(pN, N)`  
+`public_key(pN: int, N: int)`  
+_is asking for `e`_  
 pN: $\varphi(N)$  
 N: p*q  
+Returns: the public key `(e, N)`
 
 ## creating a private key
-`private_key(pN, N, e)`  
+`private_key(pN: int, N: int, e: int)`  
 pN: $\varphi(N)$  
 N: p*q  
 e: the left part of the public key  
+Retrusn: the private key `(d, N)`
 
 ## "Erweiterter eulkidischer Algorithmus"
-`extgcd(a, b)`  
+`extgcd(a: int, b: int) -> List[int]`  
 Prints the table calculation  
 Returns `[x, y]`  
 
 ## generate primes until
-`generate_primes(until: int)`  
+`generate_primes(until: int) -> List[int]`  
 Returns a list of primes excluding `until`  
