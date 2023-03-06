@@ -51,6 +51,16 @@ Asks for p, q
 Asks for an e  
 Prints the `extgcd($\varphi(N)$, e)` table  
 Prints the public & private key
+Returns: a tuple of the key tuples
+
+### How to use this return
+```python
+public_key, private_key = main()
+
+print(public_key)
+print(private_key)
+```
+the values will be directly be accessable through "unpacking"
 
 ## creating a public key
 `public_key(pN: int, N: int)`  
