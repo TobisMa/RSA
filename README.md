@@ -34,7 +34,7 @@ contains Tools for RSA usage
 
 # Usage
 ## cmd / Powershell, shell
-Run the command `python -i main.py` in the folder of the file
+Run the command `python -i rsa.py` in the folder of the file
 This will open an interactive python terminal where the commands below are usable
 
 ## file
@@ -76,7 +76,7 @@ N: p*q
 e: the left part of the public key  
 Returns: the private key `(d, N)`
 
-## "Erweiterter eulkidischer Algorithmus"
+## "Extended Euclidean Algorithm"
 `extgcd(a: int, b: int) -> List[int]`  
 Prints the table calculation  
 Returns `[x, y]`  
