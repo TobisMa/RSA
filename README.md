@@ -3,7 +3,7 @@ contains Tools for RSA usage
 
 ## NOTE
 in most cases there are more possible inputs than they should.
-- all numbers when using `main()` arem accepted; **not only** primes
+- all numbers when using `main()` are accepted; **not only** primes
 - ...and more
 
 # Install
