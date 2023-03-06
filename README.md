@@ -43,7 +43,7 @@ Returns: the public key `(e, N)`
 pN: $\varphi(N)$  
 N: p*q  
 e: the left part of the public key  
-Retrusn: the private key `(d, N)`
+Returns: the private key `(d, N)`
 
 ## "Erweiterter eulkidischer Algorithmus"
 `extgcd(a: int, b: int) -> List[int]`  
