@@ -13,7 +13,9 @@ in most cases there are more possible inputs than they should.
    the git command will create a folder
 
 ### from Website
-idk
+1. Clicking on the green button labeled `Code`
+2. Clicking on `Download ZIP`
+3. Extract the ZIP file locally
 
 
 ### Usage
@@ -24,21 +26,21 @@ This will open an interactive python terminal where the commands below are usabl
 `main()`
 
 #### creating a public key
-`public_key(pN, N)`
-pN: $\varphi(N)$
-N: p*q
+`public_key(pN, N)`  
+pN: $\varphi(N)$  
+N: p*q  
 
 #### creating a private key
 `private_key(pN, N, e)
-pN: $\varphi(N)$
-N: p*q
-e: the e of the public key
+pN: $\varphi(N)$  
+N: p*q  
+e: the e of the public key  
 
 #### "Erweiterter eulkidischer Algorithmus"
-`extgcd(a, b)`
-Prints the table calculation
-Returns `[x, y]`
+`extgcd(a, b)`  
+Prints the table calculation  
+Returns `[x, y]`  
 
 #### generate primes until
-`generate_primes(until: int)`
-Returns a list of primes excluding until
+`generate_primes(until: int)`  
+Returns a list of primes excluding `until`  
