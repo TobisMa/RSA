@@ -134,7 +134,7 @@ def public_key(pN: int, N: int) -> Tuple[int, int]:
         print("WARNING: Primes won't be calculated. To large range to cover")
         
     flag = True
-    while flag or math.gcd(e, N) != 1:
+    while flag or math.gcd(e, pN) != 1:
         if not flag:
             print("Not a valid value for e: %s" % e, file=sys.stderr)
         flag = False
