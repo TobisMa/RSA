@@ -245,3 +245,37 @@ def main() -> Union[Tuple[Tuple[int, int], Tuple[int, int]], str]:
     print("private key:", priv_key)
 
     return pub_key, priv_key
+
+if __name__ == "__main__":
+    rsa_functions = {
+        "generate-primes": generate_primes,
+        "encrypt": encrypt,
+        "decrypt": decrypt,
+        "extgcd": extgcd,
+        "public-key": public_key,
+        "private-key": private_key,
+        "key-pair": main,
+        "ectgcd-eq": extgcd_eq
+    }
+    
+    if len(sys.argv) >= 2:
+        _, func, params = sys.argv
+        pyfunc = rsa_functions.get(func)
+        if pyfunc is None:
+            print("Funtion not found. Has to be:", ', '.join(rsa_functions.keys()))
+            exit(-1)
+        
+        py_params = []
+        for p in params:
+            if p.isdigit() or (p[1:].isdigit and p[0] == "-"):
+                py_params.append(int(p))
+            
+            elif p in ("True", "False"):
+                py_params.append(eval(p))
+            
+            else:
+                py_params.append(p)
+        
+        res = pyfunc(*py_params)
+        print(res)
+        
