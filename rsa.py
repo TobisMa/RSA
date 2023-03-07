@@ -255,7 +255,7 @@ if __name__ == "__main__":
         "public-key": public_key,
         "private-key": private_key,
         "key-pair": main,
-        "ectgcd-eq": extgcd_eq
+        "extgcd-eq": extgcd_eq
     }
     
     if len(sys.argv) >= 2:
