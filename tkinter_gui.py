@@ -1,9 +1,12 @@
 import json
+import math
 import os
-from tkinter import BOTH, END, INSERT, Listbox, Tk
+from tkinter import ACTIVE, BOTH, DISABLED, END, INSERT, Listbox, Text, Tk
 from tkinter.font import *
 from tkinter.ttk import Button, Entry, Frame, Label, Notebook
 from typing import Optional
+
+from rsa import generate_primes
 
 USER_DIR = os.path.expanduser("~")
 SETTING_DIR = os.path.join(USER_DIR, ".rsa-tools") 
@@ -15,18 +18,22 @@ if not os.access(USER_FILE, os.F_OK):
     with open(USER_FILE, "w") as f:
         f.write("[]")
         
-def _entry_validate_integer(e):
+def _entry_validate_integer(e) -> Optional[bool]:
     inp = e.widget.get()
     if not inp: return
     try:
         int(inp)
     except ValueError:
         e.widget["foreground"] = "red"
+        e.widget.valid = False
+        return False
     else:
-        e.widget["foreground"] = "black"
+        e.widget["foreground"] = "green"
+        e.widget.valid = True
+        return True
 
 def _entry_required(e):
-    print(bool(e.widget.get()))
+    ...
         
         
 # TODO rename class name
@@ -61,7 +68,7 @@ class PlaceholderEntry(MyEntry):
             
     def _focus_in(self, e):
         if self._p:
-            self["foreground"] = "black"
+            self["foreground"] = "green"
             # self["font"] = self._def_font
             self.delete(0, END)
         
@@ -78,7 +85,7 @@ class Data(Frame):
         Frame.__init__(self, master, **tkinter_args)
         self.message_label = Label(self, text="Message:")
         self.message_label.grid(row=0, column=0, sticky="e")
-        self.message = MyEntry(self, width=22)
+        self.message = PlaceholderEntry(self, placeholder="integer", width=22)
         self.message.bind("<KeyRelease>", _entry_required, "+")
         self.message.bind("<KeyRelease>", _entry_validate_integer, "+")
         self.message.grid(row=0, column=1, sticky="w", columnspan=4)
@@ -118,6 +125,77 @@ class SavedKeys(Frame):
             ...
 
 
+def _entry_validate_prime(e):
+    number = _entry_validate_integer(e)
+    if number is None:
+        return
+    elif not number:
+        e.widget["foreground"] = "red"
+        return
+        
+    prime = int(e.widget.get())
+    if prime >= 100_000:
+        e.widget["foreground"] = "black"
+    elif number and prime in generate_primes(100_000):
+        e.widget["foreground"] = "green"
+    else:
+        e.widget["foreground"] = "red"
+
+
+class PublicKey(Frame):
+    def __init__(self, master, **tkinter_args):
+        Frame.__init__(self, master, **tkinter_args)
+        Label(self, text="p:").grid(row=0, column=0)
+        
+        self.p_entry = PlaceholderEntry(self, placeholder="prime")
+        self.p_entry.bind("<KeyRelease>", _entry_validate_prime, "+")
+        self.p_entry.bind("<KeyRelease>", self._calculate, "+")
+        self.p_entry.grid(row=0, column=1)
+        
+        Label(self, text="q:").grid(row=1, column=0)
+        self.q_entry = PlaceholderEntry(self, placeholder="prime")
+        self.q_entry.bind("<KeyRelease>", _entry_validate_prime, "+")
+        self.q_entry.bind("<KeyRelease>", self._calculate, "+")
+        self.q_entry.grid(row=1, column=1)
+        
+        Label(self, text=" ", width=5).grid(row=0, column=2, rowspan=2)
+        
+        Label(self, text="N:").grid(row=0, column=3)
+        self.rsa_module = Entry(self, state="readonly")
+        self.rsa_module.grid(row=0, column=4)
+        
+        Label(self, text="φ(N)").grid(row=1, column=3)
+        self.phi_n = Entry(self, state="readonly")
+        self.phi_n.grid(row=1, column=4)
+        
+        Label(self, text="Possible values for e are below").grid(row=2, column=0, columnspan=3, sticky="w")
+        self.possible_e = Text(self, state=DISABLED, width=70)
+        self.possible_e.grid(row=3, column=0, columnspan=20, sticky="news")
+        
+    def _calculate(self, e):
+        if not (getattr(self.p_entry, "valid", False) and getattr(self.q_entry, "valid", False)):
+            print(not(self.p_entry["foreground"] == "green" and "green" == self.q_entry["foreground"]))
+            print((self.p_entry["foreground"], self.q_entry["foreground"]))
+            return
+
+        N = int(self.q_entry.get()) * int(self.p_entry.get())
+        self.rsa_module["state"] = ACTIVE
+        self.rsa_module.delete(0, END)
+        self.rsa_module.insert(0, str(N))
+        self.rsa_module["state"] = "readonly"
+
+        phi_n = (int(self.q_entry.get()) - 1) * (int(self.p_entry.get()) - 1)
+        self.phi_n["state"] = ACTIVE
+        self.phi_n.delete(0, END)
+        self.phi_n.insert(0, str(phi_n))
+        self.phi_n["state"] = "readonly"
+                
+        self.possible_e["state"] = "normal"
+        self.possible_e.delete("1.0", END)
+        self.possible_e.insert("1.0", str(list(filter(lambda x: math.gcd(phi_n, x) == 1, generate_primes(min(10_000, phi_n)))))[1:-1])
+        self.possible_e["state"] = DISABLED        
+        
+  
 class Application(Tk):
     def __init__(self):
         Tk.__init__(self)
@@ -129,6 +207,7 @@ class Application(Tk):
         self.tab_control.pack(fill=BOTH, expand=True)
         
         self.tab_control.add(Data(self.tab_control), text="Data")
+        self.tab_control.add(PublicKey(self.tab_control), text="Public Key")
         # self.tab_control.add(SavedKeys(self.tab_control), text="Saved Keys")
                 
         
