@@ -132,3 +132,5 @@ dmypy.json
 # editors
 .vscode
 .idea
+output
+executable-cmd

@@ -1,8 +1,6 @@
-from ast import Mod
 import math
-from random import randint
 import sys
-from typing import Generic, List, Tuple, TypeVar, Union
+from typing import List, Tuple, Union
 
 PRIME_CALCULATION_LIMIT = 100_000
 
@@ -259,11 +257,11 @@ if __name__ == "__main__":
     }
     
     if len(sys.argv) >= 2:
-        _, func, params = sys.argv
+        _, func, *params = sys.argv
         pyfunc = rsa_functions.get(func)
         if pyfunc is None:
             print("Funtion not found. Has to be:", ', '.join(rsa_functions.keys()))
-            exit(-1)
+            sys.exit(-1)
         
         py_params = []
         for p in params:
