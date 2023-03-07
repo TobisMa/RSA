@@ -1,4 +1,5 @@
 from ast import Mod
+from functools import cache
 import math
 from random import randint
 import sys
@@ -6,6 +7,7 @@ from typing import Generic, List, Tuple, TypeVar, Union
 
 PRIME_CALCULATION_LIMIT = 100_000
 
+@cache
 def generate_primes(until: int) -> List[int]:
     """Generates primes until the given number (excluding the given number)
 
