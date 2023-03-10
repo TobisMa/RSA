@@ -4,9 +4,9 @@ import json
 import math
 import os
 import sys
-from tkinter import ACTIVE, BOTH, DISABLED, END, INSERT, Listbox, Text, Tk
+from tkinter import ACTIVE, BOTH, DISABLED, END, INSERT, IntVar, Listbox, Text, Tk
 from tkinter.font import *
-from tkinter.ttk import Button, Entry, Frame, Label, Notebook
+from tkinter.ttk import Button, Entry, Frame, Label, Notebook, Radiobutton
 from typing import Any, Iterable, Optional, TextIO
 
 from rsa import extgcd, generate_primes
@@ -217,7 +217,7 @@ class Table(Frame):
                 for j, value in enumerate(line, start=1):
                     for widgets in self.grid_slaves(i, j):
                         widgets.destroy()
-                    Label(self, text=str(value)).grid(row=i, column=j)
+                    Label(self, text=str(value), border=1).grid(row=i, column=j, ipadx=5)
 
 class PrivateKey(Frame):
     def __init__(self, master, **tkinter_args):
@@ -241,10 +241,31 @@ class PrivateKey(Frame):
         self.private_key = Entry(self, state="readonly")
         self.private_key.grid(row=1, column=1)
         
-        self.table = Table(self, None)
-        self.table.grid(row=2, column=0, columnspan=6)
+        self.calculation_type = IntVar(value=1)
         
-    def _calculate(self, e):
+        self.radio_table = Radiobutton(self, text="Tabelle", value=1, variable=self.calculation_type, command=self._select_display_type)
+        self.radio_table.grid(row=2, column=0)
+        
+        self.radio_equations = Radiobutton(self, text="Gleichungen", value=2, variable=self.calculation_type, command=self._select_display_type)
+        self.radio_equations.grid(row=2, column=1)
+        
+        self.table = Table(self, None)
+        self.table.grid(row=3, column=0, columnspan=6)
+        
+        self.eq = Table(self, None)
+        
+    def _select_display_type(self):
+        if self.calculation_type == 1:
+            self.eq.grid_forget()
+            self.table.grid(row=3, column=0, columnspan=6)
+        
+        else:
+            self.table.grid_forget()
+            self.eq.grid(row=3, column=0, columnspan=6)
+            
+        self._calculate()
+        
+    def _calculate(self, e=None):
         try:
             n = int(self.rsa_module.get())
             phi_n = int(self.phi_n.get())
@@ -252,10 +273,12 @@ class PrivateKey(Frame):
         except ValueError:
             return
 
+        display_type = bool(self.calculation_type.get() - 1)
         with StringIO() as st:
             with contextlib.redirect_stdout(st):
-                d = extgcd(e, phi_n)[0] % phi_n
+                d = extgcd(e, phi_n, as_equations=display_type)[0] % phi_n
             data = st.getvalue()
+            print(data, f"{display_type=}")
             
         key = (d, n)
         self.private_key["state"] = ACTIVE
