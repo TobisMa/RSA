@@ -1,10 +1,13 @@
+import contextlib
+from io import StringIO
 import json
 import math
 import os
+import sys
 from tkinter import ACTIVE, BOTH, DISABLED, END, INSERT, Listbox, Text, Tk
 from tkinter.font import *
 from tkinter.ttk import Button, Entry, Frame, Label, Notebook
-from typing import Optional
+from typing import Any, Iterable, Optional, TextIO
 
 from rsa import extgcd, generate_primes
 
@@ -34,7 +37,6 @@ def _entry_validate_integer(e) -> Optional[bool]:
 
 def _entry_required(e):
     ...
-        
         
 # TODO rename class name
 class MyEntry(Entry):
@@ -197,8 +199,25 @@ class PublicKey(Frame):
 
 
 class Table(Frame):
-    def __init__(self, master, **tkinter_args):
+    def __init__(self, master, table_data: Optional[Iterable[Iterable[Any]]], **tkinter_args):
         Frame.__init__(self, master, **tkinter_args)
+        self.__table_data = []
+        self.table_data = table_data
+        
+                
+    @property
+    def table_data(self):
+        return self.__table_data
+
+    @table_data.setter
+    def table_data(self, value: Optional[Iterable[Iterable[Any]]]) -> Optional[Iterable[Iterable[Any]]]:
+        self.__table_data = value
+        if self.__table_data is not None:
+            for i, line in enumerate(self.__table_data, start=1):
+                for j, value in enumerate(line, start=1):
+                    for widgets in self.grid_slaves(i, j):
+                        widgets.destroy()
+                    Label(self, text=str(value)).grid(row=i, column=j)
 
 class PrivateKey(Frame):
     def __init__(self, master, **tkinter_args):
@@ -222,7 +241,8 @@ class PrivateKey(Frame):
         self.private_key = Entry(self, state="readonly")
         self.private_key.grid(row=1, column=1)
         
-        table = Table(self)
+        self.table = Table(self, None)
+        self.table.grid(row=2, column=0, columnspan=6)
         
     def _calculate(self, e):
         try:
@@ -232,12 +252,17 @@ class PrivateKey(Frame):
         except ValueError:
             return
 
-        d = extgcd(e, phi_n)[0] % phi_n
+        with StringIO() as st:
+            with contextlib.redirect_stdout(st):
+                d = extgcd(e, phi_n)[0] % phi_n
+            data = st.getvalue()
+            
         key = (d, n)
         self.private_key["state"] = ACTIVE
         self.private_key.delete(0, END)
         self.private_key.insert(0, str(key))
         self.private_key["state"] = "readonly"
+        self.table.table_data = list(filter(lambda x: x, (x.split("\t") for x in data.split("\n"))))
         
   
 class Application(Tk):
