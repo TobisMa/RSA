@@ -1,10 +1,14 @@
+import contextlib
+from io import StringIO
 import json
 import math
 import os
-from tkinter import ACTIVE, BOTH, DISABLED, END, INSERT, Listbox, Text, Tk
+import sys
+from tkinter import ACTIVE, BOTH, DISABLED, END, INSERT, IntVar, Listbox, Text, Tk
 from tkinter.font import *
-from tkinter.ttk import Button, Entry, Frame, Label, Notebook
-from typing import Optional
+from tkinter.ttk import Button, Entry, Frame, Label, Notebook, Radiobutton
+import traceback
+from typing import Any, Iterable, Optional, TextIO
 
 from rsa import extgcd, generate_primes
 
@@ -34,7 +38,6 @@ def _entry_validate_integer(e) -> Optional[bool]:
 
 def _entry_required(e):
     ...
-        
         
 # TODO rename class name
 class MyEntry(Entry):
@@ -96,6 +99,7 @@ class Data(Frame):
         self.first_part_entry = PlaceholderEntry(self, placeholder="e or d", width=10)
         self.first_part_entry.bind("<KeyRelease>", _entry_validate_integer, "+")
         self.first_part_entry.bind("<KeyRelease>", _entry_required, "+")
+        self.first_part_entry.bind("<KeyRelease>", self._encrypt_decrypt, "+")
         self.first_part_entry.grid(row=1, column=1)
         
         Label(self, text=", ").grid(row=1, column=2)
@@ -103,19 +107,27 @@ class Data(Frame):
         self.second_part_entry = PlaceholderEntry(self, placeholder="N", width=10)
         self.second_part_entry.bind("<KeyRelease>", _entry_validate_integer, "+")
         self.second_part_entry.bind("<KeyRelease>", _entry_required, "+")
+        self.second_part_entry.bind("<KeyRelease>", self._encrypt_decrypt, "+")
         self.second_part_entry.grid(row=1, column=3)
         
         Label(self, text=")").grid(row=1, column=5)
         
-        self.convert_data = Button(self, text="Encrypt/Decrypt", width=35, command=self._encrypt_decrypt)
-        self.convert_data.grid(row=2, column=0, columnspan=4)
+        Label(self, text="Encryption/Decyription Result:").grid(row=3, column=0, columnspan=5)
+        self.data_result = Entry(self, state="readonly")
+        self.data_result.grid(row=3, column=6)
         
-        Label(self, text="Result:").grid(row=3, column=0)
-        self.data_result = Label(self, text="")
-        self.data_result.grid(row=3, column=1)
-        
-    def _encrypt_decrypt(self):
-        self.data_result["text"] = (int(self.message.get()) ** int(self.first_part_entry.get())) % int(self.second_part_entry.get())
+    def _encrypt_decrypt(self, e):
+        try:
+            msg = int(self.message.get())
+            power = int(self.first_part_entry.get())
+            mod = int(self.second_part_entry.get())
+        except ValueError:
+            return
+            
+        self.data_result["state"] = ACTIVE
+        self.data_result.delete(0, END)
+        self.data_result.insert(0, (msg ** power) % mod)
+        self.data_result["state"] = "readonly"
         
 class SavedKeys(Frame):
     def __init__(self, master, **tkinter_args):
@@ -197,8 +209,25 @@ class PublicKey(Frame):
 
 
 class Table(Frame):
-    def __init__(self, master, **tkinter_args):
+    def __init__(self, master, table_data: Optional[Iterable[Iterable[Any]]], **tkinter_args):
         Frame.__init__(self, master, **tkinter_args)
+        self.__table_data = []
+        self.table_data = table_data
+        
+                
+    @property
+    def table_data(self):
+        return self.__table_data
+
+    @table_data.setter
+    def table_data(self, value: Optional[Iterable[Iterable[Any]]]) -> Optional[Iterable[Iterable[Any]]]:
+        self.__table_data = value
+        if self.__table_data is not None:
+            for i, line in enumerate(self.__table_data, start=1):
+                for j, value in enumerate(line, start=1):
+                    for widgets in self.grid_slaves(i, j):
+                        widgets.destroy()
+                    Label(self, text=str(value), border=1).grid(row=i, column=j, ipadx=5)
 
 class PrivateKey(Frame):
     def __init__(self, master, **tkinter_args):
@@ -222,9 +251,31 @@ class PrivateKey(Frame):
         self.private_key = Entry(self, state="readonly")
         self.private_key.grid(row=1, column=1)
         
-        table = Table(self)
+        self.calculation_type = IntVar(value=1)
         
-    def _calculate(self, e):
+        self.radio_table = Radiobutton(self, text="Tabelle", value=1, variable=self.calculation_type, command=self._select_display_type)
+        self.radio_table.grid(row=2, column=0)
+        
+        self.radio_equations = Radiobutton(self, text="Gleichungen", value=2, variable=self.calculation_type, command=self._select_display_type)
+        self.radio_equations.grid(row=2, column=1)
+        
+        self.table = Table(self, None)
+        self.table.grid(row=3, column=0, columnspan=6)
+        
+        self.eq = Table(self, None)
+        
+    def _select_display_type(self):
+        if self.calculation_type.get() == 1:
+            self.eq.grid_forget()
+            self.table.grid(row=3, column=0, columnspan=6)
+
+        else:
+            self.table.grid_forget()
+            self.eq.grid(row=3, column=0, columnspan=6)
+            
+        self._calculate()
+        
+    def _calculate(self, e=None):
         try:
             n = int(self.rsa_module.get())
             phi_n = int(self.phi_n.get())
@@ -232,12 +283,23 @@ class PrivateKey(Frame):
         except ValueError:
             return
 
-        d = extgcd(e, phi_n)[0] % phi_n
+        display_type = bool(self.calculation_type.get() - 1)
+        st = StringIO()
+        with contextlib.redirect_stdout(st):
+            d = extgcd(e, phi_n, as_equations=display_type)[0] % phi_n
+        data = st.getvalue()
+        st.close()
+            
         key = (d, n)
         self.private_key["state"] = ACTIVE
         self.private_key.delete(0, END)
         self.private_key.insert(0, str(key))
         self.private_key["state"] = "readonly"
+        if display_type:
+            block1, block2 = data.split("\n\n")
+            self.eq.table_data = [("Euclidean", "Extended")] + list(zip(block1.split("\n"), reversed(block2.split("\n"))))
+        else:
+            self.table.table_data = list(filter(lambda x: x, (x.split("\t") for x in data.split("\n"))))
         
   
 class Application(Tk):
@@ -245,7 +307,8 @@ class Application(Tk):
         Tk.__init__(self)
         self.title("RSA Tools")
         self.geometry("750x450")
-        self.resizable(width=False, height=False)
+        self.maxsize(width=1000, height=700)
+        self.resizable(width=True, height=True)
         
         self.tab_control = Notebook(self)
         self.tab_control.pack(fill=BOTH, expand=True)
