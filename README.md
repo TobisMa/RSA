@@ -31,7 +31,7 @@ pN: $\varphi(N)$
 N: p*q  
 
 #### creating a private key
-`private_key(pN, N, e)
+`private_key(pN, N, e)`  
 pN: $\varphi(N)$  
 N: p*q  
 e: the e of the public key  
