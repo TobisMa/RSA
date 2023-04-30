@@ -9,13 +9,13 @@ contains Tools for RSA usage
 `main()`:
 - primes after 1000000 are not checked, but assumed to be primes due to time efficiency
 
-`public_key`
+`public_key`:
 - it is assumed `pN` and `N` are correct
 
-`private_key`
+`private_key`:
 - parameters are not checked of correctness
 
-`generate_primes`
+`generate_primes`:
 - it will exclude the `until` even though it is being calculated
 
 # Install
