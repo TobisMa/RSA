@@ -232,15 +232,16 @@ class Table(Frame):
 class PrivateKey(Frame):
     def __init__(self, master, **tkinter_args):
         Frame.__init__(self, master, **tkinter_args)
-        self.rsa_module = PlaceholderEntry(self, placeholder="N i. e. RSA-Module")
-        self.rsa_module.bind("<KeyRelease>", _entry_validate_integer, "+")
-        self.rsa_module.bind("<KeyRelease>", self._calculate, "+")
-        self.rsa_module.grid(row=0, column=0)
         
         self.phi_n = PlaceholderEntry(self, placeholder="φ(N)")
         self.phi_n.bind("<KeyRelease>", _entry_validate_integer, "+")
         self.phi_n.bind("<KeyRelease>", self._calculate, "+")
-        self.phi_n.grid(row=0, column=1)
+        self.phi_n.grid(row=0, column=0)
+
+        self.rsa_module = PlaceholderEntry(self, placeholder="N i. e. RSA-Module")
+        self.rsa_module.bind("<KeyRelease>", _entry_validate_integer, "+")
+        self.rsa_module.bind("<KeyRelease>", self._calculate, "+")
+        self.rsa_module.grid(row=0, column=1)
         
         self.e_value = PlaceholderEntry(self, placeholder="e from public key")
         self.e_value.bind("<KeyRelease>", _entry_validate_integer, "+")
