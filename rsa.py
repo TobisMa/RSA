@@ -1,9 +1,11 @@
+from functools import cache
 import math
 import sys
 from typing import List, Tuple, Union
 
 PRIME_CALCULATION_LIMIT = 100_000
 
+@cache
 def generate_primes(until: int) -> List[int]:
     """Generates primes until the given number (excluding the given number)
 
