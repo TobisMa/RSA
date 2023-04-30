@@ -104,7 +104,7 @@ secret_message = encrypt(3, public_key)  # 75
 ```
 
 ## decrypt data
-`decrypt(message: int, private_key: Tuple[int, int]) -> int`
+`decrypt(message: int, private_key: Tuple[int, int]) -> int`  
 message: the message to decrypt. For example from `encrypt`  
 private_key: the private key in format `(d, N)`
 
