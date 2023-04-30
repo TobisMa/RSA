@@ -246,6 +246,45 @@ def main() -> Union[Tuple[Tuple[int, int], Tuple[int, int]], str]:
 
     return pub_key, priv_key
 
+def rsa_help():
+    print("""
+Usage of rsa.py
+Run by `python -i rsa.py` for interactive mode. This opens a normal python shell and imports all those functions
+Run by `python rsa.py [function] [func_arg1] [func_arg2] ...`
+
+Functions:
+    key-pair
+        For generation of a key pair (public key, private key)
+        
+    generate_primes range:int
+        Generates prime until range [excluding]
+        
+    encrypt message|integer key0:int key1:int
+        encrypts message using the key (key0, key1). If message is non numerical a array with numbers is returned which contains encryption for each character
+
+    decrypt number:int key0:int key1:int
+        same as encrypt, but decrypts. Array arguments is not understood. Run by interactive mode to use array input
+        
+    public-key phi(N):int N:int
+        generates a public key
+
+    private-key phi(N):int N:int e:int [mod_d:bool=True]
+        generates a private key. e represents the first part of the public key tuple. When mod_d = true (default) this method ensures that d is always in the correct range. Turn off to see the actually result
+        
+    extgcd a:int b:int 
+        uses the extended euclidean algorithm on a and b and returns the result. Prints the calculation table as well.
+    
+    extgcd-eq a:int b:int
+        same as extgcd but prints the used equation to solve. Thanks to https://github.com/antontx/ for this method
+
+    help
+        prints this help message
+
+Made by https://github.com/TobisMa/
+""")    
+
+
+
 if __name__ == "__main__":
     rsa_functions = {
         "generate-primes": generate_primes,
@@ -255,7 +294,8 @@ if __name__ == "__main__":
         "public-key": public_key,
         "private-key": private_key,
         "key-pair": main,
-        "extgcd-eq": extgcd_eq
+        "extgcd-eq": extgcd_eq,
+        "help": rsa_help
     }
     
     if len(sys.argv) >= 2:
@@ -270,12 +310,13 @@ if __name__ == "__main__":
             if p.isdigit() or (p[1:].isdigit and p[0] == "-"):
                 py_params.append(int(p))
             
-            elif p in ("True", "False"):
-                py_params.append(eval(p))
+            elif p.lower() in ("true", "false"):
+                py_params.append(eval(p.capitalize()))
             
             else:
                 py_params.append(p)
         
         res = pyfunc(*py_params)
-        print(res)
+        if "help" not in sys.argv:
+            print(res)
         
