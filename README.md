@@ -25,12 +25,12 @@ This will open an interactive python terminal where the commands below are usabl
 
 #### creating a public key
 `public_key(pN, N)`
-pN: phi(N)
+pN: $\varphi(N)$
 N: p*q
 
 #### creating a private key
 `private_key(pN, N, e)
-pN: phi(N)
+pN: $\varphi(N)$
 N: p*q
 e: the e of the public key
 
