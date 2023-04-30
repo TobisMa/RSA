@@ -2,9 +2,25 @@
 contains Tools for RSA usage
 
 ## NOTE
+> A lot of the things below will be fixed in the next days
+
+`gcd(a, b)=ggT(a, b)`
+
 in most cases there are more possible inputs than they should.
-- all numbers when using `main()` are accepted; **not only** primes
-- ...and more
+`main()`:
+- all numbers for `p` and `q`are accepted; **not only** primes
+- there is no check for negativ numbers
+
+`public_key`
+- when asking for `e` every number is accepted even if $gcd(\varphi(N), N) \ne 1$
+- positive numbers are expected
+- it is assumed `pN` and `N` are correct
+
+`private_key`
+- parameters are not checked of correctness
+
+`generate_primes`
+- it will exclude the `until` even though it is being calculated
 
 # Install
 ## by git
