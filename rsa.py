@@ -47,8 +47,7 @@ def extgcd(a: int, b: int, *, as_equations: bool = False) -> List[int]:
     """
     if as_equations:
         out = extgcd_eq(a, b)
-        print(out[0])
-        return out[1]
+        return out
 
     table = []
     r = -1
@@ -69,7 +68,7 @@ def extgcd(a: int, b: int, *, as_equations: bool = False) -> List[int]:
     return table[0][-2:]
 
 
-def extgcd_eq(a: int, b: int) -> List:
+def extgcd_eq(a: int, b: int) -> List[int]:
     """_summary_
 
     Args:
@@ -115,8 +114,8 @@ def extgcd_eq(a: int, b: int) -> List:
         equations.append(f"{r}={x}*{a}+{y}*{b}")
 
     equations = "\n".join(equations).replace("+-", "-").replace("*", "\u2022")
-
-    return [equations, [x, y]]
+    print(equations)
+    return [x, y]
 
 
 def public_key(pN: int, N: int) -> Tuple[int, int]:
