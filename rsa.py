@@ -4,7 +4,7 @@ from random import randint
 import sys
 from typing import Generic, List, Tuple, TypeVar, Union
 
-HUNDRED_THOUSAND = 100_000
+PRIME_CALCULATION_LIMIT = 100_000
 
 def generate_primes(until: int) -> List[int]:
     """Generates primes until the given number (excluding the given number)
@@ -127,7 +127,7 @@ def public_key(pN: int, N: int) -> Tuple[int, int]:
     Returns:
         Tuple[int, int]: the public key in format `(e, N)`
     """
-    if N < 2 * HUNDRED_THOUSAND:
+    if N < 2 * PRIME_CALCULATION_LIMIT:
         possible_primes = list(filter(lambda x: math.gcd(N, x) == 1, generate_primes(pN)))
         print("Primes within range:", possible_primes)
     else:
@@ -216,11 +216,11 @@ def decrypt(message_to_decrypt: Union[List[int], int], *private_keyset) -> Union
 
 
 def main() -> Union[Tuple[Tuple[int, int], Tuple[int, int]], str]:
-    first_million_primes = generate_primes(HUNDRED_THOUSAND)
+    first_million_primes = generate_primes(PRIME_CALCULATION_LIMIT)
     p = int(input("Primzahl 1: "))
     if p < 0:
         return "No negative prime"
-    elif p > HUNDRED_THOUSAND:
+    elif p > PRIME_CALCULATION_LIMIT:
         print("WARNING: prime value will not be checked", file=sys.stderr)
     elif p not in first_million_primes:
         return "p is not prime"
@@ -228,7 +228,7 @@ def main() -> Union[Tuple[Tuple[int, int], Tuple[int, int]], str]:
     q = int(input("Primzahl 2: "))
     if q < 0:
         return "No negative prime"
-    elif p > HUNDRED_THOUSAND:
+    elif p > PRIME_CALCULATION_LIMIT:
         print("WARNING: prime value will not be checked", file=sys.stderr)
     elif p not in first_million_primes:
         return "q is not prime"
