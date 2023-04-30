@@ -319,4 +319,7 @@ if __name__ == "__main__":
         res = pyfunc(*py_params)
         if "help" not in sys.argv:
             print(res)
+    
+    elif len(sys.argv) == 1:
+        rsa_help()
         
