@@ -255,11 +255,14 @@ class PrivateKey(Frame):
         self.eq = Table(self, None)
         
     def _select_display_type(self):
-        if self.calculation_type == 1:
+        print(f"{self.calculation_type.get()=}")
+        if self.calculation_type.get() == 1:
+            print("Showing table")
             self.eq.grid_forget()
             self.table.grid(row=3, column=0, columnspan=6)
-        
+
         else:
+            print("Showing equations")
             self.table.grid_forget()
             self.eq.grid(row=3, column=0, columnspan=6)
             
@@ -274,18 +277,23 @@ class PrivateKey(Frame):
             return
 
         display_type = bool(self.calculation_type.get() - 1)
-        with StringIO() as st:
-            with contextlib.redirect_stdout(st):
-                d = extgcd(e, phi_n, as_equations=display_type)[0] % phi_n
-            data = st.getvalue()
-            print(data, f"{display_type=}")
+        st = StringIO()
+        with contextlib.redirect_stdout(st):
+            d = extgcd(e, phi_n, as_equations=display_type)[0] % phi_n
+        data = st.getvalue()
+        st.close()
+        print(data, f"{display_type=}")
             
         key = (d, n)
         self.private_key["state"] = ACTIVE
         self.private_key.delete(0, END)
         self.private_key.insert(0, str(key))
         self.private_key["state"] = "readonly"
-        self.table.table_data = list(filter(lambda x: x, (x.split("\t") for x in data.split("\n"))))
+        if display_type:
+            block1, block2 = data.split("\n\n")
+            self.eq.table_data = [("Euclidean", "Extended")] + list(zip(block1.split("\n"), reversed(block2.split("\n"))))
+        else:
+            self.table.table_data = list(filter(lambda x: x, (x.split("\t") for x in data.split("\n"))))
         
   
 class Application(Tk):
@@ -293,7 +301,8 @@ class Application(Tk):
         Tk.__init__(self)
         self.title("RSA Tools")
         self.geometry("750x450")
-        self.resizable(width=False, height=False)
+        self.maxsize(width=1000, height=700)
+        self.resizable(width=True, height=True)
         
         self.tab_control = Notebook(self)
         self.tab_control.pack(fill=BOTH, expand=True)
