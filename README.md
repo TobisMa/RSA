@@ -40,7 +40,7 @@ This will open an interactive python terminal where the commands below are usabl
 run `rsa-tools` in terminal
 
 ### Windows
-_not yet_
+click on `rsa-tools.bat` in the folder. This will open a new window where you can enter the functions from below
 
 # Functions
 ## creating a key pair
