@@ -124,12 +124,7 @@ def encrypt(m: int, *public_keyset) -> int:
 
     return (m ** public_keyset[0]) % public_keyset[1]
 def decrypt(m: int, *private_keyset) -> int:
-    if len(private_keyset) == 1 and (isinstance(private_keyset[0], list), isinstance(private_keyset[0], tuple)):
-        private_keyset = private_keyset[0]
-    elif len(private_keyset) != 2:
-        raise ValueError("Invalid arguments")
-
-    return (m ** private_keyset[0]) % private_keyset[1]
+    encrypt(m,private_keyset)
 
 
 def main() -> Union[Tuple[Tuple[int, int], Tuple[int, int]], str]:
