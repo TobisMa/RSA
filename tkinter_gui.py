@@ -6,7 +6,7 @@ from tkinter.font import *
 from tkinter.ttk import Button, Entry, Frame, Label, Notebook
 from typing import Optional
 
-from rsa import generate_primes
+from rsa import extgcd, generate_primes
 
 USER_DIR = os.path.expanduser("~")
 SETTING_DIR = os.path.join(USER_DIR, ".rsa-tools") 
@@ -194,6 +194,50 @@ class PublicKey(Frame):
         self.possible_e.delete("1.0", END)
         self.possible_e.insert("1.0", str(list(filter(lambda x: math.gcd(phi_n, x) == 1, generate_primes(min(10_000, phi_n)))))[1:-1])
         self.possible_e["state"] = DISABLED        
+
+
+class Table(Frame):
+    def __init__(self, master, **tkinter_args):
+        Frame.__init__(self, master, **tkinter_args)
+
+class PrivateKey(Frame):
+    def __init__(self, master, **tkinter_args):
+        Frame.__init__(self, master, **tkinter_args)
+        self.rsa_module = PlaceholderEntry(self, placeholder="N i. e. RSA-Module")
+        self.rsa_module.bind("<KeyRelease>", _entry_validate_integer, "+")
+        self.rsa_module.bind("<KeyRelease>", self._calculate, "+")
+        self.rsa_module.grid(row=0, column=0)
+        
+        self.phi_n = PlaceholderEntry(self, placeholder="φ(N)")
+        self.phi_n.bind("<KeyRelease>", _entry_validate_integer, "+")
+        self.phi_n.bind("<KeyRelease>", self._calculate, "+")
+        self.phi_n.grid(row=0, column=1)
+        
+        self.e_value = PlaceholderEntry(self, placeholder="e from public key")
+        self.e_value.bind("<KeyRelease>", _entry_validate_integer, "+")
+        self.e_value.bind("<KeyRelease>", self._calculate, "+")
+        self.e_value.grid(row=0, column=2)
+        
+        Label(self, text="Private key:").grid(row=1, column=0)
+        self.private_key = Entry(self, state="readonly")
+        self.private_key.grid(row=1, column=1)
+        
+        table = Table(self)
+        
+    def _calculate(self, e):
+        try:
+            n = int(self.rsa_module.get())
+            phi_n = int(self.phi_n.get())
+            e = int(self.e_value.get())
+        except ValueError:
+            return
+
+        d = extgcd(e, phi_n)[0] % phi_n
+        key = (d, n)
+        self.private_key["state"] = ACTIVE
+        self.private_key.delete(0, END)
+        self.private_key.insert(0, str(key))
+        self.private_key["state"] = "readonly"
         
   
 class Application(Tk):
@@ -208,8 +252,9 @@ class Application(Tk):
         
         self.tab_control.add(Data(self.tab_control), text="Data")
         self.tab_control.add(PublicKey(self.tab_control), text="Public Key")
+        self.tab_control.add(PrivateKey(self.tab_control), text="Private Key")
         # self.tab_control.add(SavedKeys(self.tab_control), text="Saved Keys")
-                
+        
         
         
         
