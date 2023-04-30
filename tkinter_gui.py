@@ -91,6 +91,7 @@ class Data(Frame):
         self.message = PlaceholderEntry(self, placeholder="integer", width=22)
         self.message.bind("<KeyRelease>", _entry_required, "+")
         self.message.bind("<KeyRelease>", _entry_validate_integer, "+")
+        self.message.bind("<KeyRelease>", self._encrypt_decrypt, "+")
         self.message.grid(row=0, column=1, sticky="w", columnspan=4)
         
         self.key_label = Label(self, text="Key: (")
