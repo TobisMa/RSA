@@ -7,6 +7,7 @@ import sys
 from tkinter import ACTIVE, BOTH, DISABLED, END, INSERT, IntVar, Listbox, Text, Tk
 from tkinter.font import *
 from tkinter.ttk import Button, Entry, Frame, Label, Notebook, Radiobutton
+import traceback
 from typing import Any, Iterable, Optional, TextIO
 
 from rsa import extgcd, generate_primes
@@ -98,6 +99,7 @@ class Data(Frame):
         self.first_part_entry = PlaceholderEntry(self, placeholder="e or d", width=10)
         self.first_part_entry.bind("<KeyRelease>", _entry_validate_integer, "+")
         self.first_part_entry.bind("<KeyRelease>", _entry_required, "+")
+        self.first_part_entry.bind("<KeyRelease>", self._encrypt_decrypt, "+")
         self.first_part_entry.grid(row=1, column=1)
         
         Label(self, text=", ").grid(row=1, column=2)
@@ -105,19 +107,27 @@ class Data(Frame):
         self.second_part_entry = PlaceholderEntry(self, placeholder="N", width=10)
         self.second_part_entry.bind("<KeyRelease>", _entry_validate_integer, "+")
         self.second_part_entry.bind("<KeyRelease>", _entry_required, "+")
+        self.second_part_entry.bind("<KeyRelease>", self._encrypt_decrypt, "+")
         self.second_part_entry.grid(row=1, column=3)
         
         Label(self, text=")").grid(row=1, column=5)
         
-        self.convert_data = Button(self, text="Encrypt/Decrypt", width=35, command=self._encrypt_decrypt)
-        self.convert_data.grid(row=2, column=0, columnspan=4)
+        Label(self, text="Encryption/Decyription Result:").grid(row=3, column=0, columnspan=5)
+        self.data_result = Entry(self, state="readonly")
+        self.data_result.grid(row=3, column=6)
         
-        Label(self, text="Result:").grid(row=3, column=0)
-        self.data_result = Label(self, text="")
-        self.data_result.grid(row=3, column=1)
-        
-    def _encrypt_decrypt(self):
-        self.data_result["text"] = (int(self.message.get()) ** int(self.first_part_entry.get())) % int(self.second_part_entry.get())
+    def _encrypt_decrypt(self, e):
+        try:
+            msg = int(self.message.get())
+            power = int(self.first_part_entry.get())
+            mod = int(self.second_part_entry.get())
+        except ValueError:
+            return
+            
+        self.data_result["state"] = ACTIVE
+        self.data_result.delete(0, END)
+        self.data_result.insert(0, (msg ** power) % mod)
+        self.data_result["state"] = "readonly"
         
 class SavedKeys(Frame):
     def __init__(self, master, **tkinter_args):
@@ -255,14 +265,11 @@ class PrivateKey(Frame):
         self.eq = Table(self, None)
         
     def _select_display_type(self):
-        print(f"{self.calculation_type.get()=}")
         if self.calculation_type.get() == 1:
-            print("Showing table")
             self.eq.grid_forget()
             self.table.grid(row=3, column=0, columnspan=6)
 
         else:
-            print("Showing equations")
             self.table.grid_forget()
             self.eq.grid(row=3, column=0, columnspan=6)
             
@@ -282,7 +289,6 @@ class PrivateKey(Frame):
             d = extgcd(e, phi_n, as_equations=display_type)[0] % phi_n
         data = st.getvalue()
         st.close()
-        print(data, f"{display_type=}")
             
         key = (d, n)
         self.private_key["state"] = ACTIVE
