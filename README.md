@@ -15,6 +15,9 @@ contains Tools for RSA usage
 `generate_primes`:
 - it will exclude the `until` even though it is being calculated
 
+`encrypt`, `decrypt`
+- if the message is not within the allowed range, there will be no warning whatsoever
+
 # Install
 ## by git
 **Advantage**: update possible by `git pull`
