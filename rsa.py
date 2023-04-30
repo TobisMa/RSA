@@ -25,10 +25,9 @@ def generate_primes(until: int) -> List[int]:
     return primes[:-1]
 
 
-
 def extgcd(a: int, b: int, *, eq: bool = False) -> List[int]:
     if eq:
-        out = str_extgcd(a,b)
+        out = str_extgcd(a, b)
         print(out[0])
         return out[1]
 
@@ -50,20 +49,20 @@ def extgcd(a: int, b: int, *, eq: bool = False) -> List[int]:
             print('\t'.join(map(str, line)))
     return table[0][-2:]
 
-def str_extgcd(a: int, b:int) -> List:
+
+def str_extgcd(a: int, b: int) -> List:
     r = b
     steps = []
     equations = []
 
-    #euclidean
+    # euclidean
     while True:
-        q = a//b
-        if a%b == 0:
+        q = a // b
+        if a % b == 0:
             break
         r = a % b
 
-
-        steps.append([a,q,b,r])
+        steps.append([a, q, b, r])
         equations.append(f"{a}={q}*{b}+{r}")
 
         a = b
@@ -72,25 +71,25 @@ def str_extgcd(a: int, b:int) -> List:
     equations.append(f"{a}={q}*{b}+0")
     equations.append("")
 
-    #extension
+    # extension
     x = 1
     a = steps[-1][0]
-    y = steps[-1][1]*-1
+    y = steps[-1][1] * -1
 
     equations.append(f"{r}={x}*{a}+{y}*{b}")
 
-    for i in range(len(steps)-1):
+    for i in range(len(steps) - 1):
         b = a
-        a = steps[-2-i][0]
+        a = steps[-2 - i][0]
         _y = y
-        y = x + (steps[-2-i][1]*-1)*y
+        y = x + (steps[-2 - i][1] * -1) * y
         x = _y
         equations.append(f"{r}={x}*{a}+{y}*{b}")
 
+    equations = "\n".join(equations).replace("+-", "-").replace("*", "\u2022")
 
-    equations = "\n".join(equations).replace("+-","-").replace("*","\u2022")
+    return [equations, [x, y]]
 
-    return [equations,[x,y]]
 
 def public_key(pN: int, N: int) -> Tuple[int, int]:
     possible_primes = list(filter(lambda x: math.gcd(N, x) == 1, generate_primes(pN)))
@@ -116,6 +115,21 @@ def public_key(pN: int, N: int) -> Tuple[int, int]:
 def private_key(pN: int, N: int, e: int) -> Tuple[int, int]:
     xy = extgcd(e, pN)
     return (xy[0] % pN, N)
+
+def encrypt(m: int, *public_keyset) -> int:
+    if len(public_keyset) == 1 and (isinstance(public_keyset[0], list), isinstance(public_keyset[0], tuple)):
+        public_keyset = public_keyset[0]
+    elif len(public_keyset) != 2:
+        raise ValueError("Invalid arguments")
+
+    return (m ** public_keyset[0]) % public_keyset[1]
+def decrypt(m: int, *private_keyset) -> int:
+    if len(private_keyset) == 1 and (isinstance(private_keyset[0], list), isinstance(private_keyset[0], tuple)):
+        private_keyset = private_keyset[0]
+    elif len(private_keyset) != 2:
+        raise ValueError("Invalid arguments")
+
+    return (m ** private_keyset[0]) % private_keyset[1]
 
 
 def main() -> Union[Tuple[Tuple[int, int], Tuple[int, int]], str]:
