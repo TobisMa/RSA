@@ -19,6 +19,11 @@ contains Tools for RSA usage
 - if the message is not within the allowed range, there will be no warning whatsoever
 
 # Install
+## release executables (only windows)
+1. Go to [latest release](https://github.com/TobisMa/RSA/releases/latest)
+2. Download desired executable
+3. Run terminal executable in a terminal (who would have thought) because it is command line based. Run the gui executable from whereever you want
+
 ## by git
 **Advantage**: update possible by `git pull`
 
