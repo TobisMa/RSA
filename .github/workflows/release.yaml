@@ -1,0 +1,59 @@
+name: Create executables
+
+on:
+  push:
+    tags:
+      - v*.*.*
+
+jobs:
+  makeRelease:
+    if: github.ref_type == 'tag'
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: setup python
+        uses: actions/setup-python@v1 
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller
+
+      - name: build terminal executable
+        run: pyinstaller --noconfirm --onefile --console --name "rsa-tools-terminal" --ascii --clean --no-embed-manifest  "rsa.py"
+      
+      - name: build gui executable
+        run: pyinstaller --noconfirm --onefile --windowed --name "rsa-tools-gui" --ascii --clean --no-embed-manifest  "tkinter_gui.py"
+
+      - name: create release
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: false
+          prerelease: false
+          release_name: RSA Tools ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      
+      - name: add terminal exe to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/rsa-tools-terminal.exe
+          asset_name: rsa-tools-terminal.exe
+          asset_content_type: application/vnd.microsoft.portable-executable
+
+      - name: add gui exe to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/rsa-tools-gui.exe
+          asset_name: rsa-tools-gui.exe
+          asset_content_type: application/vnd.microsoft.portable-executable
