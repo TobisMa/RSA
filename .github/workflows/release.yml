@@ -35,6 +35,7 @@ jobs:
           prerelease: false
           release_name: RSA Tools ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
+          body_path: ./CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ github.token }}
       
