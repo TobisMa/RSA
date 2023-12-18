@@ -48,6 +48,9 @@ def extgcd(a: int, b: int, *, as_equations: bool = False) -> List[int]:
         out = extgcd_eq(a, b)
         return out
 
+    if math.gcd(a, b) != 1:
+        print("gcd(e, φ(n)) not equal to 1: ", end="")
+    
     table = []
     r = -1
     while r != 0:

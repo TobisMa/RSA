@@ -1,14 +1,13 @@
 import contextlib
-from io import StringIO
 import json
 import math
 import os
-import sys
-from tkinter import ACTIVE, BOTH, DISABLED, END, INSERT, IntVar, Listbox, Text, Tk
+from io import StringIO
+from tkinter import (ACTIVE, BOTH, DISABLED, END, INSERT, IntVar, Listbox, StringVar,
+                     Text, Tk)
 from tkinter.font import *
-from tkinter.ttk import Button, Entry, Frame, Label, Notebook, Radiobutton
-import traceback
-from typing import Any, Iterable, Optional, TextIO
+from tkinter.ttk import Entry, Frame, Label, Notebook, Radiobutton
+from typing import Any, Iterable, Optional
 
 from rsa import extgcd, generate_primes
 
@@ -73,7 +72,8 @@ class PlaceholderEntry(MyEntry):
         if self._p:
             self["foreground"] = "green"
             # self["font"] = self._def_font
-            self.delete(0, END)
+            if self.get() == self.placeholder:
+                self.delete(0, END)
         
     def _focus_out(self, e):
         if not self.get() and self.placeholder:
@@ -82,10 +82,30 @@ class PlaceholderEntry(MyEntry):
             self.insert(0, self.placeholder)
             self._p = True
         
+def _entry_validate_module_n(e) -> Optional[bool]:
+    if not _entry_validate_integer(e):  # None should return False as well
+        return True
+    number = int(e.widget.get())
+    if number > 1000000:
+        e.widget["foreground"] = "black"
+        return None
+    
+    primes = generate_primes(1000)   # sqrt(1000000) = 1000
+    for i, p in enumerate(primes):
+        for p2 in primes[i+1:]:
+            if p * p2 == number and p != p2:
+                e.widget["foreground"] = "green"
+                print(f"Found {(p, p2)}={p * p2}")
+                return True
+    
+    e.widget["foreground"] = "red"
+    return False
+
     
 class Data(Frame):
-    def __init__(self, master, **tkinter_args):
+    def __init__(self, master, *, phi_n: StringVar, module_n: StringVar, **tkinter_args):
         Frame.__init__(self, master, **tkinter_args)
+        
         self.message_label = Label(self, text="Message:")
         self.message_label.grid(row=0, column=0, sticky="e")
         self.message = PlaceholderEntry(self, placeholder="integer", width=22)
@@ -106,7 +126,7 @@ class Data(Frame):
         Label(self, text=", ").grid(row=1, column=2)
         
         self.second_part_entry = PlaceholderEntry(self, placeholder="N", width=10)
-        self.second_part_entry.bind("<KeyRelease>", _entry_validate_integer, "+")
+        self.second_part_entry.bind("<KeyRelease>", _entry_validate_module_n, "+")
         self.second_part_entry.bind("<KeyRelease>", _entry_required, "+")
         self.second_part_entry.bind("<KeyRelease>", self._encrypt_decrypt, "+")
         self.second_part_entry.grid(row=1, column=3)
@@ -156,7 +176,7 @@ def _entry_validate_prime(e):
 
 
 class PublicKey(Frame):
-    def __init__(self, master, **tkinter_args):
+    def __init__(self, master, *, phi_n: StringVar, module_n: StringVar, **tkinter_args):
         Frame.__init__(self, master, **tkinter_args)
         Label(self, text="p:").grid(row=0, column=0)
         
@@ -174,11 +194,11 @@ class PublicKey(Frame):
         Label(self, text=" ", width=5).grid(row=0, column=2, rowspan=2)
         
         Label(self, text="N:").grid(row=0, column=3)
-        self.rsa_module = Entry(self, state="readonly")
+        self.rsa_module = Entry(self, state="readonly", textvariable=module_n)
         self.rsa_module.grid(row=0, column=4)
         
         Label(self, text="φ(N)").grid(row=1, column=3)
-        self.phi_n = Entry(self, state="readonly")
+        self.phi_n = Entry(self, state="readonly", textvariable=phi_n)
         self.phi_n.grid(row=1, column=4)
         
         Label(self, text="Possible values for e are below").grid(row=2, column=0, columnspan=3, sticky="w")
@@ -231,16 +251,16 @@ class Table(Frame):
                     Label(self, text=str(value), border=1).grid(row=i, column=j, ipadx=5)
 
 class PrivateKey(Frame):
-    def __init__(self, master, **tkinter_args):
+    def __init__(self, master, *, phi_n: StringVar, module_n: StringVar, **tkinter_args):
         Frame.__init__(self, master, **tkinter_args)
         
-        self.phi_n = PlaceholderEntry(self, placeholder="φ(N)")
+        self.phi_n = PlaceholderEntry(self, placeholder="φ(N)", textvariable=phi_n)
         self.phi_n.bind("<KeyRelease>", _entry_validate_integer, "+")
         self.phi_n.bind("<KeyRelease>", self._calculate, "+")
         self.phi_n.grid(row=0, column=0)
 
-        self.rsa_module = PlaceholderEntry(self, placeholder="N i. e. RSA-Module")
-        self.rsa_module.bind("<KeyRelease>", _entry_validate_integer, "+")
+        self.rsa_module = PlaceholderEntry(self, placeholder="N i. e. RSA-Module", textvariable=module_n)
+        self.rsa_module.bind("<KeyRelease>", _entry_validate_module_n, "+")
         self.rsa_module.bind("<KeyRelease>", self._calculate, "+")
         self.rsa_module.grid(row=0, column=1)
         
@@ -314,10 +334,13 @@ class Application(Tk):
         
         self.tab_control = Notebook(self)
         self.tab_control.pack(fill=BOTH, expand=True)
+
+        self.phi_n = StringVar()
+        self.module_n = StringVar()
         
-        self.tab_control.add(Data(self.tab_control), text="Data")
-        self.tab_control.add(PublicKey(self.tab_control), text="Public Key")
-        self.tab_control.add(PrivateKey(self.tab_control), text="Private Key")
+        self.tab_control.add(Data(self.tab_control, phi_n=self.phi_n, module_n=self.module_n), text="Data")
+        self.tab_control.add(PublicKey(self.tab_control, phi_n=self.phi_n, module_n=self.module_n), text="Public Key")
+        self.tab_control.add(PrivateKey(self.tab_control, phi_n=self.phi_n, module_n=self.module_n), text="Private Key")
         # self.tab_control.add(SavedKeys(self.tab_control), text="Saved Keys")
         
         
